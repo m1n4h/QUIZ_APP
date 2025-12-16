@@ -1,0 +1,55 @@
+# ======================
+# Flutter
+# ======================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+build/
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+android/.gradle/
+android/app/build/
+android/local.properties
+android/key.properties
+
+# ======================
+# Django / Python
+# ======================
+__pycache__/
+*.py[cod]
+*.sqlite3
+db.sqlite3
+.env
+.env.*
+venv/
+ENV/
+env/
+.venv/
+pip-wheel-metadata/
+
+# Django static & media
+staticfiles/
+media/
+
+# ======================
+# Logs
+# ======================
+*.log
+
+# ======================
+# OS / Editor
+# ======================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ======================
+# Git
+# ======================
+.git/
