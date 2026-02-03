@@ -1,6 +1,5 @@
 // File: lib/models/quiz_model.dart (or your main model file)
 
-import 'dart:convert'; // Just in case
 
 class Quiz {
   final String id;
@@ -14,6 +13,8 @@ class Quiz {
   // Fields returned by GraphQL (camelCase)
   final int timeLimit;
   final bool isPublished;
+  final bool allowReview;
+  final bool showScore;
   final DateTime? scheduledStart; 
   final DateTime? scheduledEnd;   
   final int timeUntilStart;
@@ -35,6 +36,8 @@ class Quiz {
     this.subjectId,
     required this.timeLimit,
     required this.isPublished,
+    required this.allowReview,
+    required this.showScore,
     required this.createdAt,
     
     // Calculated/Scheduled fields
@@ -86,6 +89,10 @@ class Quiz {
     final int timeUntilEnd = json['timeUntilEnd'] as int? ?? 0;
     final int questionCount = json['questionCount'] as int? ?? 0;
     final bool isAvailable = json['isAvailable'] as bool? ?? false;
+
+    // Optional quiz settings from GraphQL (camelCase)
+    final bool allowReview = json['allowReview'] as bool? ?? true;
+    final bool showScore = json['showScore'] as bool? ?? true;
     
     // --- 4. NESTED 'CREATED BY' FIELD SAFETY ---
     final Map<String, dynamic> createdBy = json['createdBy'] as Map<String, dynamic>? ?? {};
@@ -105,6 +112,8 @@ class Quiz {
       subjectId: subjectId,
       timeLimit: timeLimit,
       isPublished: isPublished,
+      allowReview: allowReview,
+      showScore: showScore,
       
       scheduledStart: scheduledStart,
       scheduledEnd: scheduledEnd,

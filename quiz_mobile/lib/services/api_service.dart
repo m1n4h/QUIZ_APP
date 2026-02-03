@@ -420,6 +420,8 @@ class ApiService extends GetxService {
               description
               timeLimit
               isPublished
+              allowReview
+              showScore
               scheduledStart
               scheduledEnd
             }
@@ -468,11 +470,13 @@ class ApiService extends GetxService {
       const mutation = '''
         mutation UpdateQuiz(
           \$quizId: String!
-          \$e: Strtitling
+          \$title: String
           \$description: String
           \$timeLimit: Int
           \$scheduledStart: DateTime
           \$scheduledEnd: DateTime
+          \$allowReview: Boolean
+          \$showScore: Boolean
           \$isPublished: Boolean
         ) {
           updateQuiz(
@@ -482,6 +486,8 @@ class ApiService extends GetxService {
             timeLimit: \$timeLimit
             scheduledStart: \$scheduledStart
             scheduledEnd: \$scheduledEnd
+            allowReview: \$allowReview
+            showScore: \$showScore
             isPublished: \$isPublished
           ) {
             quiz {
@@ -490,6 +496,10 @@ class ApiService extends GetxService {
               description
               timeLimit
               isPublished
+              allowReview
+              showScore
+              scheduledStart
+              scheduledEnd
             }
             success
             message
@@ -504,6 +514,8 @@ class ApiService extends GetxService {
         'timeLimit': timeLimit,
         'scheduledStart': scheduledStart?.toIso8601String(),
         'scheduledEnd': scheduledEnd?.toIso8601String(),
+        'allowReview': allowReview,
+        'showScore': showScore,
         'isPublished': isPublished,
       });
 
@@ -712,6 +724,8 @@ class ApiService extends GetxService {
       subjectId: '1',
       timeLimit: 30,
       isPublished: true,
+      allowReview: true,
+      showScore: true,
       createdAt: DateTime.now(),
       
       // Required fields for the final Quiz model
@@ -750,7 +764,6 @@ class ApiService extends GetxService {
     );
   }
 
-  @override
   Future<ApiService> init() async {
     _prefs = await SharedPreferences.getInstance();
     _token = _prefs.getString('token') ?? '';

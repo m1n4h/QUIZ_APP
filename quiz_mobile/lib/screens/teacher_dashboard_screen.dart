@@ -348,6 +348,8 @@ class _CreateQuizDialogState extends State<CreateQuizDialog> {
   final _descriptionController = TextEditingController();
   final _timeLimitController = TextEditingController(text: '30');
   bool _isLoading = false;
+  bool _allowReview = true;
+  bool _showScore = true;
 
   Future<void> _createQuiz() async {
     if (_titleController.text.isEmpty) {
@@ -366,6 +368,8 @@ class _CreateQuizDialogState extends State<CreateQuizDialog> {
         title: _titleController.text,
         description: _descriptionController.text,
         timeLimit: int.parse(_timeLimitController.text),
+        allowReview: _allowReview,
+        showScore: _showScore,
       );
 
       Get.back();
@@ -426,6 +430,33 @@ class _CreateQuizDialogState extends State<CreateQuizDialog> {
               ),
             ),
           ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Checkbox(
+                value: _allowReview,
+                onChanged: (value) {
+                  setState(() {
+                    _allowReview = value ?? true;
+                  });
+                },
+              ),
+              const Text('Allow Review'),
+            ],
+          ),
+          Row(
+            children: [
+              Checkbox(
+                value: _showScore,
+                onChanged: (value) {
+                  setState(() {
+                    _showScore = value ?? true;
+                  });
+                },
+              ),
+              const Text('Show Score Immediately'),
+            ],
+          ),
         ],
       ),
       actions: [
@@ -482,6 +513,8 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
   late TextEditingController _descriptionController;
   late TextEditingController _timeLimitController;
   bool _isLoading = false;
+  bool _allowReview = true;
+  bool _showScore = true;
 
   @override
   void initState() {
@@ -491,6 +524,8 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
         TextEditingController(text: widget.quiz.description);
     _timeLimitController =
         TextEditingController(text: '${widget.quiz.timeLimit}');
+    _allowReview = widget.quiz.allowReview;
+    _showScore = widget.quiz.showScore;
   }
 
   Future<void> _saveQuiz() async {
@@ -501,6 +536,8 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
         title: _titleController.text,
         description: _descriptionController.text,
         timeLimit: int.parse(_timeLimitController.text),
+        allowReview: _allowReview,
+        showScore: _showScore,
       );
 
       Get.back();
@@ -564,6 +601,29 @@ class _EditQuizScreenState extends State<EditQuizScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Checkbox(
+                  value: _allowReview,
+                  onChanged: (value) {
+                    setState(() => _allowReview = value ?? true);
+                  },
+                ),
+                const Text('Allow Review'),
+              ],
+            ),
+            Row(
+              children: [
+                Checkbox(
+                  value: _showScore,
+                  onChanged: (value) {
+                    setState(() => _showScore = value ?? true);
+                  },
+                ),
+                const Text('Show Score Immediately'),
+              ],
             ),
             const SizedBox(height: 32),
             SizedBox(
@@ -630,7 +690,6 @@ class ManageQuestionsScreen extends StatefulWidget {
 }
 
 class _ManageQuestionsScreenState extends State<ManageQuestionsScreen> {
-  final ApiService _apiService = Get.find<ApiService>();
   late List<Question> _questions;
 
   @override
