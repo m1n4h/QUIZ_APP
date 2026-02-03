@@ -461,12 +461,14 @@ class ApiService extends GetxService {
     DateTime? scheduledStart,
     DateTime? scheduledEnd,
     bool? isPublished,
+     required bool allowReview,
+     required bool showScore,
   }) async {
     try {
       const mutation = '''
         mutation UpdateQuiz(
           \$quizId: String!
-          \$title: String
+          \$e: Strtitling
           \$description: String
           \$timeLimit: Int
           \$scheduledStart: DateTime

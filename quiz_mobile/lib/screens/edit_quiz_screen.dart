@@ -12,6 +12,8 @@ class EditQuizScreen extends StatefulWidget {
     super.key,
     required this.quiz,
     required this.onSaved,
+    // required this.allowReview,
+    // required this .showScore,
   });
 
   @override
