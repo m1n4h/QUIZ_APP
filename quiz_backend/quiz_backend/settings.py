@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-@0+7z^v2d3m&*0bl@cq(98x9^pzs$^*-w0b57g*vhe)yw9w1_@
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = ['192.168.1.103', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['192.168.0.108', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -93,7 +93,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'quiz_db',
         'USER': 'postgres',
-        'PASSWORD': '1234567890',
+        'PASSWORD': 'amygirly',
         'HOST': 'localhost',
         'PORT': '5432',
     }
