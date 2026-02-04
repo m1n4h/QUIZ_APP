@@ -343,8 +343,20 @@ class CreateQuestionMutation(graphene.Mutation):
         if not info.context.user.is_authenticated:
             return CreateQuestionMutation(success=False, message='Not authenticated')
         
+        # Check if the user is a teacher or admin
+        if info.context.user.role not in ['teacher', 'admin']:
+            return CreateQuestionMutation(success=False, message='Only teachers and admins can create questions')
+        
         try:
-            quiz = Quiz.objects.get(id=quiz_id, created_by=info.context.user)
+            quiz = Quiz.objects.get(id=quiz_id)
+        except Quiz.DoesNotExist:
+            return CreateQuestionMutation(success=False, message='Quiz not found')
+        
+        # If the user is not an admin, check if they are the creator of the quiz
+        if info.context.user.role != 'admin' and quiz.created_by != info.context.user:
+            return CreateQuestionMutation(success=False, message='You are not the creator of this quiz')
+        
+        try:
             question = Question.objects.create(
                 quiz=quiz,
                 question_text=question_text,
@@ -354,16 +366,17 @@ class CreateQuestionMutation(graphene.Mutation):
             )
             
             for idx, choice_data in enumerate(choices):
+                if isinstance(choice_data, str):
+                    import json
+                    choice_data = json.loads(choice_data)
                 Choice.objects.create(
                     question=question,
                     choice_text=choice_data.get('choice_text', ''),
                     is_correct=choice_data.get('is_correct', False),
-                    order=idx
+                    order=choice_data.get('order', idx)
                 )
             
             return CreateQuestionMutation(success=True, question=question)
-        except Quiz.DoesNotExist:
-            return CreateQuestionMutation(success=False, message='Quiz not found')
         except Exception as e:
             return CreateQuestionMutation(success=False, message=str(e))
 
@@ -382,55 +395,66 @@ class SubmitQuizMutation(graphene.Mutation):
             return SubmitQuizMutation(success=False, message='Not authenticated')
         
         try:
+            from django.db import transaction
+            
             quiz = Quiz.objects.get(id=quiz_id)
             
             if not quiz.is_available_now():
                 return SubmitQuizMutation(success=False, message='Quiz is not available')
             
-            attempt = QuizAttempt.objects.create(
-                user=info.context.user,
-                quiz=quiz,
-                total_questions=quiz.questions.count(),
-                time_taken=time_taken
-            )
-            
-            total_score = 0
-            correct_answers = 0
-            
-            for answer_data in answers:
-                question_id = answer_data.get('question_id')
-                selected_choice_id = answer_data.get('selected_choice_id')
-                answer_text = answer_data.get('answer_text', '')
-                
-                question = Question.objects.get(id=question_id, quiz=quiz)
-                selected_choice = None
-                is_correct = False
-                points_earned = 0
-                
-                if selected_choice_id:
-                    selected_choice = Choice.objects.get(id=selected_choice_id)
-                    is_correct = selected_choice.is_correct
-                
-                if is_correct:
-                    points_earned = question.points
-                    total_score += points_earned
-                    correct_answers += 1
-                
-                Answer.objects.create(
-                    attempt=attempt,
-                    question=question,
-                    selected_choice=selected_choice,
-                    answer_text=answer_text,
-                    is_correct=is_correct,
-                    points_earned=points_earned
+            with transaction.atomic():
+                attempt = QuizAttempt.objects.create(
+                    user=info.context.user,
+                    quiz=quiz,
+                    total_questions=quiz.questions.count(),
+                    time_taken=time_taken
                 )
-            
-            attempt.score = total_score
-            attempt.correct_answers = correct_answers
-            attempt.save()
+                
+                total_score = 0
+                correct_answers = 0
+                
+                for answer_data in answers:
+                    if isinstance(answer_data, str):
+                        import json
+                        answer_data = json.loads(answer_data)
+                    
+                    question_id = answer_data.get('question_id')
+                    selected_choice_id = answer_data.get('selected_choice_id')
+                    answer_text = answer_data.get('answer_text', '')
+                    
+                    try:
+                        question = Question.objects.get(id=question_id, quiz=quiz)
+                        selected_choice = None
+                        is_correct = False
+                        points_earned = 0
+                        
+                        if selected_choice_id:
+                            selected_choice = Choice.objects.get(id=selected_choice_id, question=question)
+                            is_correct = selected_choice.is_correct
+                        
+                        if is_correct:
+                            points_earned = question.points
+                            total_score += points_earned
+                            correct_answers += 1
+                        
+                        Answer.objects.create(
+                            attempt=attempt,
+                            question=question,
+                            selected_choice=selected_choice,
+                            answer_text=answer_text,
+                            is_correct=is_correct,
+                            points_earned=points_earned
+                        )
+                    except (Question.DoesNotExist, Choice.DoesNotExist):
+                        continue
+                
+                attempt.score = total_score
+                attempt.correct_answers = correct_answers
+                attempt.save()
             
             return SubmitQuizMutation(success=True, attempt=attempt)
         except Exception as e:
+            print(f"SubmitQuiz error: {e}")
             return SubmitQuizMutation(success=False, message=str(e))
 
 class Mutation(graphene.ObjectType):

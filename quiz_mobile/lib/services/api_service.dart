@@ -5,7 +5,7 @@ import 'package:quiz_app/models/quiz_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService extends GetxService {
-  static const String baseUrl = 'http://192.168.0.108:8000';
+  static const String baseUrl = 'http://192.168.0.116:8000';
   static const String graphqlEndpoint = '$baseUrl/graphql/';
   static const String restEndpoint = '$baseUrl/api';
   late SharedPreferences _prefs;
