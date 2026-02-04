@@ -236,7 +236,7 @@ class CreateQuizMutation(graphene.Mutation):
     class Arguments:
         title = graphene.String(required=True)
         description = graphene.String()
-        subject_id = graphene.String(required=True)
+        subject_id = graphene.String()  # optional now
         time_limit = graphene.Int()
         scheduled_start = graphene.DateTime()
         scheduled_end = graphene.DateTime()
@@ -247,8 +247,11 @@ class CreateQuizMutation(graphene.Mutation):
     success = graphene.Boolean()
     message = graphene.String()
     
-    def mutate(self, info, title, subject_id, description='', time_limit=30, 
+    def mutate(self, info, title, subject_id=None, description='', time_limit=30, 
                scheduled_start=None, scheduled_end=None, allow_review=True, show_score=True):
+        # Debug log for incoming mutation
+        print(f"CreateQuiz called by user={getattr(info.context.user, 'email', None)} subject_id={subject_id} title={title}")
+
         if not info.context.user.is_authenticated:
             return CreateQuizMutation(success=False, message='Not authenticated')
         
@@ -256,7 +259,22 @@ class CreateQuizMutation(graphene.Mutation):
             return CreateQuizMutation(success=False, message='Only teachers can create quizzes')
         
         try:
-            subject = Subject.objects.get(id=subject_id)
+            if subject_id:
+                try:
+                    subject = Subject.objects.get(id=subject_id)
+                except Subject.DoesNotExist:
+                    return CreateQuizMutation(success=False, message='Subject not found')
+            else:
+                # Fallback: try to find a subject created by the user, then any subject, else create a default one
+                subject = Subject.objects.filter(created_by=info.context.user).first() or Subject.objects.first()
+                if subject is None:
+                    subject = Subject.objects.create(
+                        name='General',
+                        description='Auto-created default subject',
+                        created_by=info.context.user
+                    )
+                    print(f"Auto-created default subject with id={subject.id}")
+
             quiz = Quiz.objects.create(
                 title=title,
                 description=description,
@@ -268,8 +286,10 @@ class CreateQuizMutation(graphene.Mutation):
                 allow_review=allow_review,
                 show_score=show_score
             )
+            print(f"Quiz created id={quiz.id} title={quiz.title}")
             return CreateQuizMutation(success=True, quiz=quiz)
         except Exception as e:
+            print(f"CreateQuiz error: {e}")
             return CreateQuizMutation(success=False, message=str(e))
 
 class UpdateQuizMutation(graphene.Mutation):

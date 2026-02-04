@@ -14,12 +14,17 @@ class JWTAuthenticationMiddleware(MiddlewareMixin):
 
     def __call__(self, request):
         try:
+            auth_header = request.META.get('HTTP_AUTHORIZATION')
+            print(f"Incoming GraphQL request Authorization header: {auth_header is not None}")
             user_auth_tuple = self.auth.authenticate(request)
             if user_auth_tuple is not None:
                 user, validated_token = user_auth_tuple
                 request.user = user
-        except Exception:
+                print(f"JWT auth successful for user: {getattr(user, 'email', '<no-email>')}")
+            else:
+                print("JWT auth: no valid token found or authentication failed")
+        except Exception as e:
             # don't raise — leave request.user as-is (AnonymousUser)
-            pass
+            print(f"JWT auth error: {e}")
         response = self.get_response(request)
-        return response
+        return self.get_response(request)

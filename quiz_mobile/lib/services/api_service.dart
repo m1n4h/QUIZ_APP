@@ -26,13 +26,17 @@ class ApiService extends GetxService {
     Map<String, dynamic>? variables,
   }) async {
     try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (_token.isNotEmpty) 'Authorization': 'Bearer $_token',
+      };
+
+      print('GraphQL Headers - Authorization present: ${headers.containsKey('Authorization')} tokenLength: ${_token.length}');
+
       final response = await http.post(
         Uri.parse(graphqlEndpoint),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          if (_token.isNotEmpty) 'Authorization': 'Bearer $_token',
-        },
+        headers: headers,
         body: jsonEncode({
           'query': query,
           if (variables != null) 'variables': variables,
@@ -393,6 +397,12 @@ class ApiService extends GetxService {
     bool showScore = true,
   }) async {
     try {
+      // Quick auth guard for clearer client-side error message
+      if (_token.isEmpty) {
+        print('CreateQuiz blocked: no token present');
+        throw Exception('Not authenticated. Please log in.');
+      }
+
       const mutation = '''
         mutation CreateQuiz(
           \$title: String!

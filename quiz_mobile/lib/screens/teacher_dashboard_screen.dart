@@ -364,6 +364,20 @@ class _CreateQuizDialogState extends State<CreateQuizDialog> {
 
     setState(() => _isLoading = true);
     try {
+      final token = _apiService.getToken();
+      if (token == null || token.isEmpty) {
+        Get.snackbar(
+          'Authentication Required',
+          'Please login as a teacher to create quizzes',
+          backgroundColor: AppColors.errorColor,
+          colorText: AppColors.secondaryColor,
+        );
+        Get.offAllNamed('/login');
+        return;
+      }
+
+      print('Creating quiz - token present? ${token.isNotEmpty}');
+
       await _apiService.createQuiz(
         title: _titleController.text,
         description: _descriptionController.text,
