@@ -261,8 +261,8 @@ class LoginMutation(graphene.Mutation):
                     return LoginMutation(success=False, message='Your account has been suspended. Please contact an administrator.')
                 
                 # Check if teacher needs approval
-                if user.role == 'teacher' and not user.is_approved:
-                    return LoginMutation(success=False, message='Your account is pending admin approval.')
+               # if user.role == 'teacher' and not user.is_approved:
+                #    return LoginMutation(success=False, message='Your account is pending admin approval.')
                 
                 # If all checks pass, generate token
                 refresh = RefreshToken.for_user(user)
