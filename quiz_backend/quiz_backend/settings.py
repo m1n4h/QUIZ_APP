@@ -181,6 +181,7 @@ GRAPHENE = {
     'SCHEMA': 'quiz_api.schema.schema',
     'MIDDLEWARE': [
         'graphene_django.debug.DjangoDebugMiddleware',
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',  # authenticate logged user teacher or admin user
     ]
 }
 
